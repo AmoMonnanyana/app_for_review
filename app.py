@@ -40,7 +40,7 @@ def home():
     return render_template("homepage.html")
 
 
-
+print()
 
 if __name__ == '__main__':
     init_app(app) 
