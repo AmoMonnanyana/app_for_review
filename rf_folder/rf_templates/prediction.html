@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contamination Predictor</title>
+    <link rel="icon" type="images/x-icon" href="/static/images/Green_Nature_Logo-removebg-preview.png" />
+
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+        integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+        crossorigin="anonymous"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="/static/scripts.js"></script>
+    <script src="/static/prediction.js"></script>
+    <style>
+        body {
+            background-color: #dad7cd;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+    </style>
+</head>
+
+<body x-data="prediction">
+
+    <div class="wrapper">
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="container">
+                    <a class="navbar-brand bg-transparent" href="#">
+                        <img src="/static/images/Green_Nature_Logo-removebg-preview.png" style="background-color: #fff;"
+                            alt="Logo" width="50" height="50" class="d-inline-block px-1 align-text-top">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="{{ url_for('app_rf.index') }}">Home</a>
+                            </li>
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="{{ url_for('app_rf.about_us') }}">About Us</a>
+                            </li>
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="{{ url_for('app_rf.predict') }}">Soil Prediction</a>
+                            </li>
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="{{ url_for('app_rf.map') }}">Map</a>
+                            </li>
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="{{ url_for('app_rf.soil_quality_standards') }}">Soil Quality
+                                    Standards</a>
+                            </li>
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="{{ url_for('app_rf.contact_us') }}">Contact Us</a>
+                            </li>
+                            <li class="my-auto nav-item me-3">
+                                <form action="{{ url_for('app_rf.logout')}}">
+                                    <button type="submit" class="btn btn-sm fw-bold btn-danger">Logout <i
+                                            class="fa-solid fa-right-from-bracket"></i></button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    </div>
+
+    <div class="container mb-3">
+        <h1 class="text-center mb-4">Contamination Prediction</h1>
+        <p style="text-align: center;">Soil contamination prediction based on heavy elements is a crucial aspect of
+            environmental science. It involves the use of various methods to forecast the potential spread and impact of
+            heavy metal pollutants in the soil. Predicting soil contamination based on heavy elements is crucial as it
+            helps in taking proactive measures to control pollution and protect public health.</p>
+        <p>To test the level of Contamination of your soil sample(s), you can either upload an <b>excel</b> or manually
+            input values below.</p>
+        <p><em>Take Note</em>: ensure that column names are <b>"Latitude"</b> and <b>"Longitude"</b> for coordinates,
+            and <b>"Cd_value", "Cr_value", "Ni_value", "Pb_value", "Zn_value", "Cu_value"</b> and <b> "Co_value"</b> for
+            heavy metals.
+        </p>
+
+        <hr>
+
+        <div class="container text-center">
+            <h2 class="text-center"><i class="fa-solid fa-file-excel"></i> Upload File</h2>
+            <form id="upload-form" action="{{ url_for('app_rf.upload_file') }}" method="post"
+                enctype="multipart/form-data" onsubmit="uploadFile(event)">
+                <div class="input-group">
+                    <input type="file" class="form-control fw-bold" name="file" id="fileInput"
+                        aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+                    <button class="btn btn-secondary fw-bold" type="submit" id="inputGroupFileAddon04"><i
+                            class="fa-solid fa-upload"></i> Upload</button>
+                </div>
+            </form>
+
+
+            <div id="download-container"></div>
+
+
+            <div id="progress"></div>
+            </form>
+
+            <form action="{{ url_for('app_rf.user_data') }}">
+                <button type="submit" class="btn btn-primary fw-bold my-3"><i class="fa-solid fa-database"></i> View
+                    Data</button>
+            </form>
+
+            <div class="loading-overlay" id="loadingOverlay">
+                <img src="/static/images/Green_Nature_Logo-removebg-preview.png" alt="logo"><br>
+                <div class="loading-text">Processing... Please Wait</div>
+                <div class="progress">
+                    <div class="progress-bar bg-success" id="progress-bar" role="progressbar"></div>
+                </div>
+            </div>
+
+
+        </div>
+        <hr>
+
+
+        <form id="predictionForm" action="{{ url_for('app_rf.predict') }}" method="post" class="row g-3">
+
+
+            <div class="container my-4 text-center">
+                <span class="fw-bold"><i class="fa-solid fa-globe me-2"></i> Coordinates
+                    <em class="mx-2" style="font: 5px; font-weight: normal;">(Decimal Degrees)</em></span>
+                <div class="input-group rounded">
+                    
+                    <div class="form-floating">
+                        <input type="text" placeholder="latitude" class="form-control fw-light" id="latitude" name="latitude">
+                        <label style="font-weight: normal;" for="latitude">Latitude</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" placeholder="longitude" class="form-control" id="longitude" name="longitude">
+                        <label style="font-weight: normal;" for="longitude">Longitude</label>
+
+                    </div>
+                </div>
+            </div>
+
+             <span class="text-center fw-bold"><i class="fa-solid fa-flask-vial"></i> Metal Concentrations
+                <em class="mx-2" style="font: 5px; font-weight: normal;">(mg/kg)</em></span>
+            <div class="input-group rounded">
+               
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" id="cd_value" placeholder="Cadmium Concentration"
+                        name="cd_value">
+                    <label style="font-weight: normal;" for="cd_value">Cadmium</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" placeholder="Chromium Concentration" id="cr_value"
+                        name="cr_value">
+                    <label style="font-weight: normal;" for="cr_value">Chromium</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" placeholder="Nickel Concentration" id="ni_value"
+                        name="ni_value">
+                    <label style="font-weight: normal;" for="ni_value">Nickel</label>
+                </div>
+
+            </div>
+
+            <br>
+            <br>
+
+            <div class="input-group rounded">
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" id="pb_value" placeholder="Lead Concentration"
+                        name="pb_value">
+                    <label style="font-weight: normal;" for="pb_value">Lead</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" placeholder="Zinc Concentration" id="zn_value"
+                        name="zn_value">
+                    <label style="font-weight: normal;" for="zn_value">Zinc</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" placeholder="Copper Concentration" id="cu_value"
+                        name="cu_value">
+                    <label style="font-weight: normal;" for="cu_value">Copper</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control fw-bold" placeholder="Cobalt Concentration" id="co_value"
+                        name="co_value">
+                    <label style="font-weight: normal;" for="co_value">Cobalt</label>
+                </div>
+            </div>
+
+            <br>
+            <br>
+
+            <a href="{{ url_for('app_rf.predict') }}" class="btn btn-info fw-bold" onclick="validateForm()"><i
+                    class="fa-solid fa-arrows-spin"></i> Add more
+                values</a>
+
+            <button type="submit" class="btn btn-success fw-bold"><i class="fa-solid fa-check"></i> Done</button>
+
+        </form>
+
+    </div>
+
+    <div>
+        <footer class="footer">
+            <p>Find us on:</p>
+
+            <div class="social-icons">
+                <a href="#" class="btn btn-outline-light btn-lg"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" class="btn btn-outline-light btn-lg me-2"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="btn btn-outline-light btn-lg me-2"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#" class="btn btn-outline-light btn-lg me-2"><i class="fab fa-instagram"></i></a>
+            </div>
+
+            <p>All Rights Reserved | &copy; Capstone Project Group 15</p>
+        </footer>
+    </div>
+    <script>
+        // Event listener for form submission
+        document.getElementById('upload-form').addEventListener('submit', function () {
+            document.getElementById('loadingOverlay').style.display = 'flex'; // Show loading overlay
+        });
+
+        // Function to handle file upload
+        function uploadFile(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('fileInput');
+            formData.append('file', fileInput.files[0]);
+
+            // Create a new XMLHttpRequest object
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'upload', true);
+
+            // Event listener for progress
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    document.getElementById('progress').innerText = `Progress: ${Math.round(percentComplete)}%`;
+                    // Update progress bar width
+                    document.getElementById('progress-bar').style.width = `${Math.round(percentComplete)}%`;
+                }
+            };
+
+            // Event listener for when the upload is complete
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.result_filename) {
+                        // Display a download button
+                        const downloadButton = document.createElement('a');
+                        downloadButton.href = `{{ url_for('app_rf.download_result', result_filename='')}}${response.result_filename}`;
+                        downloadButton.innerHTML = '<b>Download Results</b> <i class="fa-solid fa-download"></i>';
+                        downloadButton.className = 'download-button';
+                        document.getElementById('download-container').appendChild(downloadButton);
+                        document.getElementById('download-container').style.display = 'block';  // Show download container
+                        document.getElementById('progress-bar').innerText = 'Analysis done';
+
+                    } else {
+                        alert('Invalid file type');
+                    }
+                } else {
+                    alert('Error uploading file');
+                }
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+            };
+
+            // Send the form data
+            xhr.send(formData);
+        };
+    </script>
+
+
+</body>
+
+</html>
