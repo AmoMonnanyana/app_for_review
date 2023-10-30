@@ -121,12 +121,9 @@ def contact():
 
 @app_ann.route("/gis_map")
 def gis_map():
-    try:
-         if session['username']:
-            return render_template("index-Gis-map.html")
-         else:
-             return "User is not logged in!"
-    except KeyError:
+    if session['username']:
+        return render_template("index-Gis-map.html")
+    else:
         return redirect(url_for('app_ann.login'))
 
 @app_ann.route("/get_contamination_data", methods=['GET'])
