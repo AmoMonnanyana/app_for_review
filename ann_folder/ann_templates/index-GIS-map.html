@@ -112,7 +112,7 @@
             background-color: gray;
         }
     </style>
-
+</head>
 <body x-data="prediction">
 
     <div class="wrapper">
@@ -261,16 +261,24 @@
             crossorigin="anonymous"></script>
 
         <script>
+
+            const protocol = window.location.protocol; // 'http:' or 'https:'
+            const baseUrl = protocol + '//' + window.location.hostname; // Base URL
+
+            // Construct the API URL with the relative path
+            const apiUrl = baseUrl + '/ann/get_contamination_data';
+
             var map = L.map('map').setView([0, 0], 2);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
             }).addTo(map);
 
-            fetch('/ann/get_contamination_data')
+            fetch("/ann/get_contamination_data")
                 .then(response => response.json())
                 .then(data => {
                     data.forEach(entry => {
+                    
                         var popupContent = `
                     <strong>Latitude:</strong> ${entry.lat}<br>
                             <strong>Longitude:</strong> ${entry.long}<br>
@@ -326,7 +334,7 @@
                         }
                         var contaminationLevel = entry.predicted_class;
                         var markerColor;
-
+                        
                         switch (contaminationLevel) {
                             case 'very low contamination':
                                 markerColor = 'green';
